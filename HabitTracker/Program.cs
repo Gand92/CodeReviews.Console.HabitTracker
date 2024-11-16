@@ -1,3 +1,12 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using HabitTracker.Database;
 
-Console.WriteLine("Hello, World!");
+namespace HabitTracker;
+
+internal static class Program
+{
+    public static void Main(string[] args)
+    {
+        Db.CreateDatabase();
+        Console.ReadLine();
+    }
+}
