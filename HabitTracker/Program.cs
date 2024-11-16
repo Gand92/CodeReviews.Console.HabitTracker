@@ -1,4 +1,6 @@
-﻿namespace HabitTracker;
+﻿using System.Globalization;
+
+namespace HabitTracker;
 
 internal static class Program
 {
@@ -66,16 +68,35 @@ internal static class Program
 
     private static void AddHabit()
     {
-        Console.Write("Enter the name of the habit: ");
+        Console.WriteLine("Enter the name of the habit: ");
+        string name = Console.ReadLine() ?? string.Empty;
+        Console.WriteLine("Enter the quantity of the habit: ");
+        var quantity = int.Parse(Console.ReadLine() ?? string.Empty);
+
+        Console.WriteLine("Enter the date of creation (MM-dd-yyyy): ");
+        string createdAt = Console.ReadLine() ?? string.Empty;
+        while (!ValidationUtilities.IsValidDate(createdAt))
+        {
+            Console.WriteLine("Invalid date format. Please enter a valid date (MM/dd/yyyy): ");
+            createdAt = Console.ReadLine() ?? string.Empty;
+        }
+
+        var habit = new Habit(
+            0,
+            name,
+            quantity,
+            DateTime.ParseExact(createdAt, "d", CultureInfo.InvariantCulture)
+        );
+        Console.WriteLine(habit.ToString());
     }
 
     private static void RemoveHabit()
     {
-        Console.Write("Enter the ID of the habit you want to remove: ");
+        Console.WriteLine("Enter the ID of the habit you want to remove: ");
     }
 
     private static void UpdateHabit()
     {
-        Console.Write("Enter the ID of the habit you want to update: ");
+        Console.WriteLine("Enter the ID of the habit you want to update: ");
     }
 }
