@@ -92,6 +92,37 @@ public static class Db
         return habits;
     }
 
+    public static void AddHabit(Habit habit)
+    {
+        using var connection = new SqliteConnection(ConnectionString);
+        connection.Open();
+
+        var insertCommand = connection.CreateCommand();
+        insertCommand.CommandText =
+            @"
+        INSERT INTO Habits (Name, Quantity, CreatedAt)
+        VALUES (@Name, @Quantity, @CreatedAt)";
+
+        insertCommand.Parameters.AddWithValue("@Name", habit.Name);
+        insertCommand.Parameters.AddWithValue("@Quantity", habit.Quantity);
+        insertCommand.Parameters.AddWithValue(
+            "@CreatedAt",
+            habit.CreatedAt.ToString("d", CultureInfo.InvariantCulture)
+        );
+
+        int rowInserted = insertCommand.ExecuteNonQuery();
+        if (rowInserted != 1)
+        {
+            Console.WriteLine("Error inserting habit. Try again!\n");
+        }
+        else
+        {
+            Console.WriteLine("Habit added successfully!\n");
+        }
+
+        connection.Close();
+    }
+
     public static bool IsTableEmpty()
     {
         using var connection = new SqliteConnection(ConnectionString);
@@ -104,5 +135,75 @@ public static class Db
 
         connection.Close();
         return count == 0;
+    }
+
+    public static void RemoveHabit(int id)
+    {
+        using var connection = new SqliteConnection(ConnectionString);
+        connection.Open();
+
+        var deleteCommand = connection.CreateCommand();
+        deleteCommand.CommandText = "DELETE FROM Habits WHERE Id = @Id";
+        deleteCommand.Parameters.AddWithValue("@Id", id);
+
+        int deletedRow = deleteCommand.ExecuteNonQuery();
+        if (deletedRow != 1)
+        {
+            Console.WriteLine("Error deleting habit. Try again!\n");
+        }
+        else
+        {
+            Console.WriteLine("Habit deleted successfully!\n");
+        }
+
+        connection.Close();
+    }
+
+    public static void UpdateHabit(Habit habit)
+    {
+        using var connection = new SqliteConnection(ConnectionString);
+        connection.Open();
+
+        var updateCommand = connection.CreateCommand();
+        updateCommand.CommandText =
+            @"
+        UPDATE Habits
+        SET Name = @Name, Quantity = @Quantity, CreatedAt = @CreatedAt
+        WHERE Id = @Id";
+
+        updateCommand.Parameters.AddWithValue("@Name", habit.Name);
+        updateCommand.Parameters.AddWithValue("@Quantity", habit.Quantity);
+        updateCommand.Parameters.AddWithValue(
+            "@CreatedAt",
+            habit.CreatedAt.ToString("d", CultureInfo.InvariantCulture)
+        );
+        updateCommand.Parameters.AddWithValue("@Id", habit.Id);
+
+        int rowUpdated = updateCommand.ExecuteNonQuery();
+        if (rowUpdated != 1)
+        {
+            Console.WriteLine("Error updating habit. Try again!\n");
+        }
+        else
+        {
+            Console.WriteLine("Habit updated successfully!\n");
+        }
+
+        connection.Close();
+    }
+
+    public static bool CheckHabitExists(int id)
+    {
+        using var connection = new SqliteConnection(ConnectionString);
+        connection.Open();
+
+        var selectCommand = connection.CreateCommand();
+        selectCommand.CommandText = "SELECT COUNT(*) FROM Habits WHERE Id = @Id";
+        selectCommand.Parameters.AddWithValue("@Id", id);
+
+        var count = (long)(selectCommand.ExecuteScalar() ?? throw new InvalidOperationException());
+
+        connection.Close();
+        return count == 1;
     }
 }

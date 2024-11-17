@@ -58,45 +58,108 @@ internal static class Program
 
     private static void ShowHabits()
     {
+        DisplayHabitsList();
+        Menu();
+    }
+
+    private static void DisplayHabitsList()
+    {
         Console.WriteLine("List of tracked habits:\n");
         var habits = Db.GetHabits();
         foreach (var habit in habits)
         {
             Console.WriteLine(habit.ToString());
         }
+        Console.WriteLine();
     }
 
     private static void AddHabit()
     {
         Console.WriteLine("Enter the name of the habit: ");
-        string name = Console.ReadLine() ?? string.Empty;
-        Console.WriteLine("Enter the quantity of the habit: ");
-        var quantity = int.Parse(Console.ReadLine() ?? string.Empty);
+        string name = GetInputString();
 
-        Console.WriteLine("Enter the date of creation (MM-dd-yyyy): ");
-        string createdAt = Console.ReadLine() ?? string.Empty;
+        Console.WriteLine("Enter the quantity of the habit: ");
+        var quantity = GetInputInt();
+
+        Console.WriteLine("Enter the date of creation (MM/dd/yyyy): ");
+        DateTime createdAt = GetInputDate();
+
+        var habit = new Habit(0, name, quantity, createdAt);
+        Db.AddHabit(habit);
+        DisplayHabitsList();
+        Menu();
+    }
+
+    private static void RemoveHabit()
+    {
+        Console.WriteLine("Enter the ID of the habit you want to remove:\n");
+        DisplayHabitsList();
+        var id = GetInputInt();
+        Db.RemoveHabit(id);
+        DisplayHabitsList();
+        Menu();
+    }
+
+    private static void UpdateHabit()
+    {
+        Console.WriteLine("Enter the ID of the habit you want to update:\n");
+        DisplayHabitsList();
+        var id = GetInputInt();
+        if (!Db.CheckHabitExists(id))
+        {
+            Console.WriteLine("Habit not found. Try again!\n");
+            Menu();
+            return;
+        }
+
+        Console.WriteLine("Enter the name of the habit: ");
+        string name = GetInputString();
+
+        Console.WriteLine("Enter the quantity of the habit: ");
+        var quantity = GetInputInt();
+
+        Console.WriteLine("Enter the date of creation (MM/dd/yyyy): ");
+        DateTime createdAt = GetInputDate();
+
+        var habit = new Habit(id, name, quantity, createdAt);
+        Db.UpdateHabit(habit);
+        DisplayHabitsList();
+        Menu();
+    }
+
+    private static string GetInputString()
+    {
+        var name = Console.ReadLine() ?? string.Empty;
+        while (!ValidationUtilities.IsValidString(name))
+        {
+            Console.WriteLine("Invalid name. Please enter a valid name: ");
+            name = Console.ReadLine() ?? string.Empty;
+        }
+
+        return name;
+    }
+
+    private static int GetInputInt()
+    {
+        var quantity = Console.ReadLine() ?? string.Empty;
+        while (!ValidationUtilities.IsValidInt(quantity))
+        {
+            Console.WriteLine("Invalid integer. Please enter a valid quantity: ");
+            quantity = Console.ReadLine() ?? string.Empty;
+        }
+
+        return Convert.ToInt32(quantity);
+    }
+
+    private static DateTime GetInputDate()
+    {
+        var createdAt = Console.ReadLine() ?? string.Empty;
         while (!ValidationUtilities.IsValidDate(createdAt))
         {
             Console.WriteLine("Invalid date format. Please enter a valid date (MM/dd/yyyy): ");
             createdAt = Console.ReadLine() ?? string.Empty;
         }
 
-        var habit = new Habit(
-            0,
-            name,
-            quantity,
-            DateTime.ParseExact(createdAt, "d", CultureInfo.InvariantCulture)
-        );
-        Console.WriteLine(habit.ToString());
-    }
-
-    private static void RemoveHabit()
-    {
-        Console.WriteLine("Enter the ID of the habit you want to remove: ");
-    }
-
-    private static void UpdateHabit()
-    {
-        Console.WriteLine("Enter the ID of the habit you want to update: ");
+        return DateTime.ParseExact(createdAt, "d", CultureInfo.InvariantCulture);
     }
 }
